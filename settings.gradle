@@ -1,1 +1,5 @@
 rootProject.name = 'demo'
+
+include 'search-api'
+include 'external'
+include 'common'
