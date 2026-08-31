@@ -3,6 +3,7 @@ package libarary.feign;
 import feign.RequestInterceptor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
+import tools.jackson.databind.ObjectMapper;
 
 public class NaverClientConfiguration {
     @Bean
@@ -13,5 +14,10 @@ public class NaverClientConfiguration {
         return requestTemplate -> requestTemplate
                 .header("X-Naver-client-Id", clientId)
                 .header("X-Naver-client-Secret", clientSecret);
+    }
+
+    @Bean
+    public NaverErrorDecoder naverErrorDecoder(ObjectMapper objectMapper) {
+        return new NaverErrorDecoder(objectMapper);
     }
 }
