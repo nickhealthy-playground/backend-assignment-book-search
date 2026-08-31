@@ -1,8 +1,10 @@
 package libarary.feign
 
+import com.library.ErrorType
 import feign.Request
 import feign.Response
 import libarary.NaverErrorResponse
+import org.springframework.http.HttpStatus
 import spock.lang.Specification
 import tools.jackson.databind.ObjectMapper
 
@@ -10,7 +12,7 @@ class NaverErrorDecoderTest extends Specification {
     ObjectMapper objectMapper = Mock()
     NaverErrorDecoder errorDecoder = new NaverErrorDecoder(objectMapper)
 
-    def "에러디코더에서 에러발생시 RuntimeException 예외가 throw 된다."() {
+    def "에러디코더에서 에러발생시 ApiException 예외가 throw 된다."() {
         given:
         def responseBody = Mock(Response.Body)
         def inputStream = new ByteArrayInputStream()
@@ -29,6 +31,10 @@ class NaverErrorDecoderTest extends Specification {
 
         then:
         RuntimeException e = thrown()
-        e.message == "error!!"
+        verifyAll {
+            e.errorMessage == "error!!"
+            e.httpStatus == HttpStatus.BAD_REQUEST
+            e.errorType == ErrorType.EXTERNAL_API_ERROR
+        }
     }
 }

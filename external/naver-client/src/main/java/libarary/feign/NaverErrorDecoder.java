@@ -1,13 +1,18 @@
 package libarary.feign;
 
+import com.library.ApiException;
+import com.library.ErrorType;
 import feign.Response;
 import feign.codec.ErrorDecoder;
 import libarary.NaverErrorResponse;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
+@Slf4j
 public class NaverErrorDecoder implements ErrorDecoder {
     private final ObjectMapper objectMapper;
 
@@ -20,9 +25,10 @@ public class NaverErrorDecoder implements ErrorDecoder {
         try {
             String body = new String(response.body().asInputStream().readAllBytes(), StandardCharsets.UTF_8);
             NaverErrorResponse errorResponse = objectMapper.readValue(body, NaverErrorResponse.class);
-            throw new RuntimeException(errorResponse.getErrorMessage());
+            throw new ApiException(errorResponse.getErrorMessage(), ErrorType.EXTERNAL_API_ERROR, HttpStatus.valueOf(response.status()));
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            log.error("[Naver] 에러 메시지 파싱 에러 code={}, request={}, methodKey={}, errorMessage={}", response.status(), response.request(), methodKey, e.getMessage());
+            throw new ApiException("네이버 메시지 파싱에러", ErrorType.EXTERNAL_API_ERROR, HttpStatus.valueOf(response.status()));
         }
 
     }
