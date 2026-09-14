@@ -4,3 +4,13 @@ external:
     headers:
       client-id: ${NAVER_API_CLIENT_ID:mock-client-id}
       client-secret: ${NAVER_API_CLIENT_SECRET:mock-client-secret}
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        sliding-window-size: 100
+        minimum-number-of-calls: 10
+        wait-duration-in-open-state:
+          seconds: 20
+        failure-rate-threshold: 50
+        permitted-number-of-calls-in-half-open-state: 10
