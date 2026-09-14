@@ -27,9 +27,9 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleApiException(Exception e) {
-        log.error("Exception occurred. message={}, className={}", e.getMessage(), e.getClass().getName());
+        log.error("Exception occurred. message={}, className={}", e.getMessage(), e.getClass().getName(), e);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ErrorResponse(ErrorType.UNKNOWN.getDescription(), ErrorType.UNKNOWN));
+                   .body(new ErrorResponse(ErrorType.UNKNOWN.getDescription(), ErrorType.UNKNOWN));
     }
 
     @ExceptionHandler(NoResourceFoundException.class)
