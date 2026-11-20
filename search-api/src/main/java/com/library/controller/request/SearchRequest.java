@@ -13,6 +13,10 @@ import static io.swagger.v3.oas.annotations.media.Schema.RequiredMode.*;
 @ToString
 @Schema(description = "검색 요청을 위한 모델")
 public class SearchRequest {
+    // 네이버 start 상한(1000). 네이버 장애로 카카오에 fallback 되어도 같은 요청이 유효하도록
+    // page·size 상한은 두 API의 공통 범위로 제한한다 (카카오: page 1~50, size 1~50)
+    private static final int MAX_SEARCHABLE_RESULTS = 1000;
+
     @NotBlank(message = "입력은 비어있을 수 없습니다.")
     @Size(max = 50, message = "입력은 최대 50자를 초과할 수 없습니다.")
     @Schema(description = "검색 쿼리", example = "HTTP", requiredMode = REQUIRED, maxLength = 50)
@@ -20,8 +24,8 @@ public class SearchRequest {
 
     @NotNull(message = "페이지 번호는 필수입니다.")
     @Min(value = 1, message = "페이지 번호는 1이상이어야 합니다.")
-    @Max(value = 10000, message = "페이지 번호는 10000이하여야 합니다.")
-    @Schema(description = "페이지 번호", example = "1", requiredMode = REQUIRED, minLength = 1, maxLength = 10000)
+    @Max(value = 50, message = "페이지 번호는 50이하여야 합니다.")
+    @Schema(description = "페이지 번호", example = "1", requiredMode = REQUIRED, minLength = 1, maxLength = 50)
     private Integer page;
 
     @NotNull(message = "페이지 사이즈는 필수입니다.")
@@ -29,4 +33,13 @@ public class SearchRequest {
     @Max(value = 50, message = "페이지 크기는 50이하여야 합니다.")
     @Schema(description = "페이지 사이즈", example = "10", requiredMode = REQUIRED, minLength = 1, maxLength = 50)
     private int size;
+
+    @Schema(hidden = true)
+    @AssertTrue(message = "검색 결과는 1000번째까지만 조회할 수 있습니다.")
+    public boolean isWithinSearchableRange() {
+        if (page == null) {
+            return true; // 필수값 검증은 @NotNull이 담당
+        }
+        return (long) (page - 1) * size < MAX_SEARCHABLE_RESULTS;
+    }
 }

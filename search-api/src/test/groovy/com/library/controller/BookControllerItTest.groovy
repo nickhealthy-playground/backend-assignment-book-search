@@ -100,4 +100,46 @@ class BookControllerItTest extends Specification {
                 .andExpect (jsonPath('$.errorMessage').value("페이지 크기는 50이하여야 합니다."))
     }
 
+    def "외부 API 공통 조회 범위를 벗어난 page=#page, size=#size 요청은 BadRequest 응답 반환된다."() {
+        when:
+        def result = mockMvc.perform(MockMvcRequestBuilders.get("/v1/books")
+                .param("query", "HTTP")
+                .param("page", page.toString())
+                .param("size", size.toString())
+        )
+
+        then:
+        result.andExpect (status().isBadRequest())
+                .andExpect (jsonPath('$.errorMessage').value(message))
+
+        and: "잘못된 요청은 외부 API까지 전달되지 않는다."
+        0 * bookQueryService.search(*_)
+
+        where:
+        page | size || message
+        51   | 10   || "페이지 번호는 50이하여야 합니다."
+        21   | 50   || "검색 결과는 1000번째까지만 조회할 수 있습니다."
+        50   | 21   || "검색 결과는 1000번째까지만 조회할 수 있습니다."
+    }
+
+    def "외부 API 공통 조회 범위의 마지막 page=#page, size=#size 요청은 성공한다."() {
+        given:
+        bookQueryService.search(*_) >> new PageResult<>(page, size, 0, [])
+
+        when:
+        def result = mockMvc.perform(MockMvcRequestBuilders.get("/v1/books")
+                .param("query", "HTTP")
+                .param("page", page.toString())
+                .param("size", size.toString())
+        )
+
+        then:
+        result.andExpect (status().is2xxSuccessful())
+
+        where:
+        page | size
+        20   | 50
+        50   | 20
+    }
+
 }
