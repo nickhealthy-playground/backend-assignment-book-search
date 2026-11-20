@@ -1,5 +1,7 @@
 package com.library.service
 
+import com.library.ApiException
+import com.library.ErrorType
 import com.library.controller.response.PageResult
 import com.library.controller.response.SearchResponse
 import com.library.repository.KakaoBookRepository
@@ -10,6 +12,7 @@ import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry
 import org.spockframework.spring.SpringBean
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.http.HttpStatus
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
 import spock.lang.Specification
@@ -103,5 +106,62 @@ class BookQueryServiceItTest extends Specification {
             config.slowCallDurationThreshold == Duration.ofSeconds(2)
             config.slowCallRateThreshold == 50f
         }
+    }
+
+    def "네이버가 400(잘못된 요청)을 응답하면 카카오로 fallback 하지 않고 그대로 전달하며, 서킷 실패로도 집계하지 않는다."() {
+        given: "yml 기본 설정을 유지한 채 1건만 실패해도 OPEN 되도록 윈도우만 줄인다."
+        def circuitBreaker = createNaverCircuitBreakerOpeningOnFirstFailure()
+
+        and:
+        naverBookRepository.search(*_) >> {
+            throw new ApiException("Invalid start value", ErrorType.EXTERNAL_API_ERROR, HttpStatus.BAD_REQUEST)
+        }
+
+        when:
+        bookQueryService.search('HTTP', 1, 10)
+
+        then:
+        def e = thrown(ApiException)
+        e.httpStatus == HttpStatus.BAD_REQUEST
+
+        and:
+        0 * kakaoBookRepository.search(*_)
+
+        and:
+        circuitBreaker.state == CircuitBreaker.State.CLOSED
+        circuitBreaker.metrics.numberOfFailedCalls == 0
+    }
+
+    def "네이버가 #status 를 응답하면 네이버를 쓸 수 없는 상태로 보고 장애로 집계하며 카카오로 fallback 한다."() {
+        given:
+        def circuitBreaker = createNaverCircuitBreakerOpeningOnFirstFailure()
+        def kakaoResponse = new PageResult(1, 10, 0, [])
+
+        and:
+        naverBookRepository.search(*_) >> {
+            throw new ApiException("error", ErrorType.EXTERNAL_API_ERROR, status)
+        }
+
+        when:
+        def result = bookQueryService.search('HTTP', 1, 10)
+
+        then:
+        1 * kakaoBookRepository.search('HTTP', 1, 10) >> kakaoResponse
+        result == kakaoResponse
+
+        and:
+        circuitBreaker.state == CircuitBreaker.State.OPEN
+        circuitBreaker.metrics.numberOfFailedCalls == 1
+
+        where:
+        status << [HttpStatus.UNAUTHORIZED, HttpStatus.TOO_MANY_REQUESTS, HttpStatus.INTERNAL_SERVER_ERROR]
+    }
+
+    private CircuitBreaker createNaverCircuitBreakerOpeningOnFirstFailure() {
+        def config = CircuitBreakerConfig.from(circuitBreakerRegistry.getDefaultConfig())
+                .slidingWindowSize(1)
+                .minimumNumberOfCalls(1)
+                .build()
+        return circuitBreakerRegistry.circuitBreaker("naverSearch", config)
     }
 }

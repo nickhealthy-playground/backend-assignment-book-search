@@ -39,3 +39,5 @@ resilience4j:
         # read-timeout(3s)보다 짧게 두어, 타임아웃에 이르기 전의 지연도 장애 신호로 집계한다
         slow-call-duration-threshold: 2s
         slow-call-rate-threshold: 50
+        # 잘못된 요청(400)은 외부 API 장애가 아니므로 실패율에 넣지 않는다
+        ignore-exception-predicate: com.library.service.BadRequestExceptionPredicate
