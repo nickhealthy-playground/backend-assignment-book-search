@@ -19,11 +19,16 @@ public class NaverBookRepository implements BookRepository {
 
     @Override
     public PageResult<SearchResponse> search(String query, int page, int size) {
-        NaverBookResponse response = naverClient.search(query, page, size);
+        NaverBookResponse response = naverClient.search(query, toStart(page, size), size);
         List<SearchResponse> responses = response.getItems().stream()
                 .map(this::createResponse)
                 .collect(Collectors.toList());
         return new PageResult<>(page, size, response.getTotal(), responses);
+    }
+
+    // 네이버 start는 페이지 번호가 아니라 1부터 시작하는 첫 항목의 위치다 (카카오 page와 의미가 다름)
+    private int toStart(int page, int size) {
+        return (page - 1) * size + 1;
     }
 
     private SearchResponse createResponse(Item item) {

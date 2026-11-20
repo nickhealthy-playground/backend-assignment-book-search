@@ -48,4 +48,22 @@ class NaverBookRepositoryTest extends Specification {
             result.contents().get(0).pubDate() == LocalDate.of(2024, 1, 1)
         }
     }
+
+    def "page=#page, size=#size 요청은 네이버 start=#expectedStart(1부터 시작하는 첫 항목 위치)로 변환되고, 응답 page는 요청 page를 유지한다."() {
+        when:
+        def result = bookRepository.search("HTTP", page, size)
+
+        then:
+        1 * naverClient.search("HTTP", expectedStart, size) >> new NaverBookResponse(total: 0, items: [])
+
+        and:
+        result.page() == page
+
+        where:
+        page | size || expectedStart
+        1    | 10   || 1
+        2    | 10   || 11
+        3    | 2    || 5
+        20   | 50   || 951
+    }
 }

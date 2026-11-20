@@ -1,5 +1,6 @@
 package com.library.service;
 
+import com.library.ApiException;
 import com.library.controller.response.PageResult;
 import com.library.controller.response.SearchResponse;
 import com.library.repository.BookRepository;
@@ -10,10 +11,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
+import java.util.function.Predicate;
+
 @Slf4j
 @RequiredArgsConstructor
 @Service
 public class BookQueryService {
+    private static final Predicate<Throwable> IS_BAD_REQUEST = new BadRequestExceptionPredicate();
+
     @Qualifier("naverBookRepository")
     private final BookRepository naverBookRepository;
 
@@ -27,6 +32,10 @@ public class BookQueryService {
     }
 
     public PageResult<SearchResponse> searchFallBack(String query, int page, int size, Throwable throwable) {
+        // 서킷 집계에서 제외(ignore-exception-predicate)된 예외도 fallback 메서드는 호출되므로 여기서 한 번 더 걸러낸다
+        if (IS_BAD_REQUEST.test(throwable)) {
+            throw (ApiException) throwable;
+        }
         if (throwable instanceof CallNotPermittedException) {
             return handleOpenCircuit(query, page, size);
         }

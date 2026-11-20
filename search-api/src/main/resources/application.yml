@@ -19,13 +19,25 @@ spring:
     properties:
       hibernate:
         format_sql: true
+  cloud:
+    openfeign:
+      client:
+        config:
+          default:
+            # 미설정 시 Feign 기본값(connect 10s, read 60s)이라 지연 장애 동안 요청 스레드가 묶이고 서킷도 열리지 않는다
+            connect-timeout: 1000
+            read-timeout: 3000
 resilience4j:
   circuitbreaker:
     configs:
       default:
         sliding-window-size: 100
         minimum-number-of-calls: 10
-        wait-duration-in-open-state:
-          seconds: 20
+        wait-duration-in-open-state: 20s # 'seconds: 20' 맵 형식은 바인딩되지 않아 기본값 60s가 적용되고 있었음
         failure-rate-threshold: 50
         permitted-number-of-calls-in-half-open-state: 10
+        # read-timeout(3s)보다 짧게 두어, 타임아웃에 이르기 전의 지연도 장애 신호로 집계한다
+        slow-call-duration-threshold: 2s
+        slow-call-rate-threshold: 50
+        # 잘못된 요청(400)은 외부 API 장애가 아니므로 실패율에 넣지 않는다
+        ignore-exception-predicate: com.library.service.BadRequestExceptionPredicate
