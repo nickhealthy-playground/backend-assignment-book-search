@@ -8,13 +8,3 @@ external:
     url: https://dapi.kakao.com
     headers:
       rest-api-key: test
-resilience4j:
-  circuitbreaker:
-    configs:
-      default:
-        sliding-window-size: 100
-        minimum-number-of-calls: 10
-        wait-duration-in-open-state:
-          seconds: 20
-        failure-rate-threshold: 50
-        permitted-number-of-calls-in-half-open-state: 10

@@ -14,6 +14,8 @@ import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
 import spock.lang.Specification
 
+import java.time.Duration
+
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 @ActiveProfiles("test")
 @SpringBootTest
@@ -85,5 +87,21 @@ class BookQueryServiceItTest extends Specification {
 
         and:
         result == kakaoResponse
+    }
+
+    def "application.yml의 서킷브레이커 설정이 기본 설정으로 바인딩된다."() {
+        when:
+        def config = circuitBreakerRegistry.getDefaultConfig()
+
+        then:
+        verifyAll {
+            config.slidingWindowSize == 100
+            config.minimumNumberOfCalls == 10
+            config.failureRateThreshold == 50f
+            config.permittedNumberOfCallsInHalfOpenState == 10
+            config.waitIntervalFunctionInOpenState.apply(1) == Duration.ofSeconds(20).toMillis()
+            config.slowCallDurationThreshold == Duration.ofSeconds(2)
+            config.slowCallRateThreshold == 50f
+        }
     }
 }
