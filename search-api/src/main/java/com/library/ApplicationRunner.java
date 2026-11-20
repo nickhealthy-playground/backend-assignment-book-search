@@ -4,11 +4,14 @@ import com.library.entity.DailyStat;
 import com.library.repository.DailyStatRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
+// 로컬에서 통계 API를 바로 확인하기 위한 샘플 데이터. 실제 통계와 섞이지 않도록 local에서만 적재한다
+@Profile("local")
 @RequiredArgsConstructor
 @Component
 public class ApplicationRunner implements CommandLineRunner {

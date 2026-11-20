@@ -2,6 +2,7 @@ package com.library;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -12,8 +13,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-// 테스트용도
+// 비동기 스레드풀 부하 확인용. 요청 1건이 자기 자신을 10번 호출하므로 local 외 환경에 노출하지 않는다
 @Slf4j
+@Profile("local")
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/v1/test")
