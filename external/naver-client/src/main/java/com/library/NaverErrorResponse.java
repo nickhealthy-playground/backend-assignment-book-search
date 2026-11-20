@@ -1,4 +1,4 @@
-package libarary;
+package com.library;
 
 
 import lombok.AccessLevel;

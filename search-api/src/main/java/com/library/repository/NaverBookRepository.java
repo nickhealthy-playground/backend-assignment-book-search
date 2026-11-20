@@ -3,9 +3,9 @@ package com.library.repository;
 import com.library.controller.response.PageResult;
 import com.library.controller.response.SearchResponse;
 import com.library.util.DateUtils;
-import libarary.Item;
-import libarary.NaverBookResponse;
-import libarary.feign.NaverClient;
+import com.library.Item;
+import com.library.NaverBookResponse;
+import com.library.feign.NaverClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 

@@ -4,7 +4,7 @@ import com.library.controller.response.StatResponse
 import com.library.entity.DailyStat
 import com.library.feign.KakaoClient
 import jakarta.persistence.EntityManager
-import libarary.feign.NaverClient
+import com.library.feign.NaverClient
 import org.spockframework.spring.SpringBean
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest

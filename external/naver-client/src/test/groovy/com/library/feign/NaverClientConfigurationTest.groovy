@@ -1,4 +1,4 @@
-package libarary.feign
+package com.library.feign
 
 import feign.RequestInterceptor
 import feign.RequestTemplate

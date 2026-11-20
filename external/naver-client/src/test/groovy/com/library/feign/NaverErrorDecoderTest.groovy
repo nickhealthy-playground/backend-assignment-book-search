@@ -1,9 +1,9 @@
-package libarary.feign
+package com.library.feign
 
 import com.library.ErrorType
 import feign.Request
 import feign.Response
-import libarary.NaverErrorResponse
+import com.library.NaverErrorResponse
 import org.springframework.http.HttpStatus
 import spock.lang.Specification
 import tools.jackson.databind.ObjectMapper

@@ -1,10 +1,10 @@
-package libarary.feign;
+package com.library.feign;
 
 import com.library.ApiException;
 import com.library.ErrorType;
 import feign.Response;
 import feign.codec.ErrorDecoder;
-import libarary.NaverErrorResponse;
+import com.library.NaverErrorResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import tools.jackson.databind.ObjectMapper;

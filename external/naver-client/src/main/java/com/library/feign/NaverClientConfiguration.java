@@ -1,4 +1,4 @@
-package libarary.feign;
+package com.library.feign;
 
 import feign.RequestInterceptor;
 import org.springframework.beans.factory.annotation.Value;
